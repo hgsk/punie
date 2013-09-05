@@ -3,7 +3,8 @@
 class GreetingController{
 
     public function hello(){
-        $str = 'controller.hello.';
+        $user = User.find(1);
+
         include(ROOT_PATH.'/app/views/greeting.php');
     }
 }
