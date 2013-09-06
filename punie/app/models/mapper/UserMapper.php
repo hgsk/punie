@@ -8,7 +8,7 @@
 
 class UserMapper extends DataMapper
 {
-    private $model_class = "User";
+    const MODEL = "User";
     protected $table = "users";
 
     protected $fields = [
@@ -18,7 +18,13 @@ class UserMapper extends DataMapper
         'email' => ['type'=> 'string', 'required' => true]
         ];
 
+    /**
+     * @param Collection or Model Object $data
+     * @return int InsertId
+     * @throws InvalidArgumentException
+     */
     function insert($data){
+        $modelClass = self::MODEL;
         $statement = $this->$pdo->prepare(
             'INSERT INTO users(id,username,password,email) VALUES(?,?,?,?)'
         );
@@ -31,7 +37,7 @@ class UserMapper extends DataMapper
             $data = [$data];
         }
         foreach($data as $row){
-            if(! $row instanceof $this->model_class || $row->isValid()){
+            if(! $row instanceof $modelClass || $row->isValid()){
                 throw new InvalidArgumentException;
             }
             $id = $row->id;
@@ -42,9 +48,8 @@ class UserMapper extends DataMapper
 
             $row->entryId = $pdo->lastInsertId();
         }
+        return $pdo->lastInsertId();
     }
-
-    //TODO Relation
 
     function find($id){
         $statement = $this->pdo->prepare('SELECT * FROM users WHERE id = ?');
@@ -56,6 +61,25 @@ class UserMapper extends DataMapper
     function all(){
         $statement = $this->pdo->query('SELECT * FROM users');
         return $this->_decorate($statement);
+    }
+
+    public function getUsersByGender($gender){
+        if($this->db == null)return;
+        $template = 'SELECT %s FROM %s WHERE %s ORDER BY %s limit %s';
+
+        $column = 'name';
+        $table = 'users';
+        $condition = 'age > 12';
+        $order = 'asc';
+        $limit = '100';
+
+        $sql = sprintf($template,$column,$table,$condition,$order,$limit);
+
+        $response = $this->db->query($sql);
+        if(response!=null){
+            return $response;
+        }
+        return null;
     }
 }
 
