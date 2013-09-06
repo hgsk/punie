@@ -2,15 +2,15 @@
 class DAO
 {
     private static $dao;
-    protected $db;
-    protected $table;
-    protected $lastQuery;
-    protected $lastError;
+    protected static $db;
+    protected static $table;
+    protected static $lastQuery;
+    protected static $lastError;
 
-    public function __construct($table)
+    public static function initialize($table)
     {
-        $this->table=$table;
-        $this->db = DBManager::get();
+        self::setTable($table);
+        self::setDB(DBManager::get());
     }
 
     public static function getDAO($dao)
@@ -27,31 +27,47 @@ class DAO
         return self::$dao[$className];
     }
 
-    public function getLastQuery(){
-        return $this->lastQuery;
+    private static function setTable($table){
+        self::$table = $table;
     }
-    public function getLastError()
+
+    private static function setDB($db){
+        self::$db = $db;
+    }
+
+    public static function getLastQuery(){
+        return self::lastQuery;
+    }
+    public static function getLastError()
     {
-        return $this->lastError;
+        return self::lastError;
     }
-    public function getDB(){
-        return $this->db;
+    public static function getDB(){
+        return self::db;
     }
-    public function prepareExecute($query,$params)
+    public static function prepareExecute($query,$params)
     {
-        if($this->db == null)return;
-        $this->lastQuery = $query;
+        if(self::db == null)return;
+        self::setLastQuery($query);
 
         //TODO Guard from SQL Injection
-        $statement = $this->db->prepare($query);
+        $db = self::getDB;
+        $statement = $db->prepare($query);
         if(statement != null){
-            $this->lastError = $statement->errorInfo();
+            self::setLastError($statement->errorInfo());
             $statement->execute($params);
-            $this->lastError = $statement->errorInfo();
+            self::setLastError($statement->errorInfo());
         }
         return $statement;
     }
 
+    private static function setLastError($error){
+       self::$lastError = $error;
+    }
+
+    private static function setLastQuery($query){
+        self::$lastQuery = $query;
+    }
     public function getAll($where='',$order='')
     {
         //TODO string check

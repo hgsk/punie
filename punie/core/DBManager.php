@@ -8,6 +8,7 @@
 
 abstract class DBManager
 {
+    //singleton
     protected static $db;
     function __construct ($config)
     {
