@@ -139,4 +139,6 @@ mysql::db { 'dev':
   require  => Class['mysql::server'],
 }
 
-
+exec{ "ln -s /var/www/phpunit.phar /usr/local/bin/phpunit":
+  path => ["/bin/","/usr/bin/","/usr/sbin"]
+}
