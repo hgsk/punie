@@ -18,5 +18,6 @@ class Dispatcher{
         //get action
         $action=$params[1];
         $controller->$action();
+
     }
 }

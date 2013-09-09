@@ -3,6 +3,6 @@
 <head>
 </head>
 <body>
-<h1><?php echo $str; ?></h1>
+<h1><?php echo $user['name']; ?></h1>
 </body>
 </html>
