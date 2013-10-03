@@ -24,6 +24,9 @@ class Test extends PHPUnit_Framework_TestCase
           $this->assertEquals("hoge",$user->getName());
           $this->assertEquals($birthday,$user->getBirthday());
       }
+      public function testUserFlush(){
+
+      }
       public function testConfigException(){
           require_once "../punie/core/Config.php";
           try{

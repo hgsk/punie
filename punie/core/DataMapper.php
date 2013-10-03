@@ -6,16 +6,10 @@ abstract class DataMapper
     protected static $lastError;
     protected $table;
 
-    public function __construct(PDO $pdo){
-       $this->$pdo = $pdo;
+    public function __construct($pdo){
+       $this->pdo = $pdo;
     }
 
-    public function _decorate($statement){
-        $statement->setFetchMode(PDO::FETCH_CLASS, static::MODEL_CLASS);
-        return $statement;
-    }
-
-    //unused
     public function get_class_name(){
         return __CLASS__;
     }
@@ -33,7 +27,6 @@ abstract class DataMapper
     }
 
     public function fieldExists($field){
-
     }
 
     public function validate(){
@@ -47,7 +40,7 @@ abstract class DataMapper
 
     }
 
-    public function find($conditions=[],$clause=[]){
+    public function find($id){
 
     }
 
@@ -77,50 +70,9 @@ abstract class DataMapper
 
     public static function get($model)
     {
-        //TODO init on class loaded.
-        $config = ['host'=>'localhost','port'=>'3306','dbname'=>'mydb','username'=>'manager','password'=>'password'];
-        self::setPDO(DBFactory::get($config));
-
-        //ClassName
-        $className = strtolower($model);
-
-        if(!isset(self::$dao[$className]))
-        {
-            self::$dao[$className]=new $className();
-            return self::$dao[$className];
-        }else{
-            return null;
-        }
-        return self::$dao[$className];
     }
 
-
-    public static function getLastQuery(){
-        return self::lastQuery;
-    }
-
-    private static function setLastQuery($query){
-        self::$lastQuery = $query;
-    }
-
-    public static function getLastError()
-    {
-        return self::lastError;
-    }
-
-    private static function setLastError($error){
-       self::$lastError = $error;
-    }
-
-    // general query methods
-    public static function getAll($where='',$order='')
-    {
-        //TODO string check
-        if(self::dao == null)return;
-        $sql = 'SELECT * FROM '. self::$table . ' WHERE ' . $where . 'ORDER BY' . $order;
-    }
-
-    public static function prepareExecute($query,$params)
+    protected static function prepareExecute($query,$params)
     {
         if(self::db == null)return;
         self::setLastQuery($query);
@@ -134,5 +86,21 @@ abstract class DataMapper
             self::setLastError($statement->errorInfo());
         }
         return $statement;
+    }
+    public function lastInsertId(){
+        return $this->pdo->lastInsertId();
+    }
+    protected function prepare($params){
+        // TODO write test
+        $statement = $this->pdo->prepare($params["sql"]);
+        if($params["params"]){
+            foreach($params["params"] as $key=> $value){
+                $statement->bindParam($key,$value);
+            }
+        }
+    }
+    protected function execute($statement){
+        $statement->execute();
+        return $statement->fetch();
     }
 }

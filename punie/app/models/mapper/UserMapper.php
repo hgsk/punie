@@ -8,9 +8,6 @@
 
 class UserMapper extends DataMapper
 {
-    const MODEL = "User";
-    protected $table = "users";
-
     protected $fields = [
         'id' => ['type'=> 'int', 'primary' => true],
         'username' => ['type'=> 'string', 'required' => true],
@@ -23,63 +20,47 @@ class UserMapper extends DataMapper
      * @return int InsertId
      * @throws InvalidArgumentException
      */
-    function insert($data){
-        $modelClass = self::MODEL;
-        $statement = $this->$pdo->prepare(
-            'INSERT INTO users(id,username,password,email) VALUES(?,?,?,?)'
+
+    public function insert($model){
+        $statement = $this->prepare([
+            "sql"=>"INSERT INTO users(name) VALUES (:name);"
+            ,
+            "params"=>[
+                ":name"=>$model->getName()
+                ]
+            ]
         );
-        $statement->bindParam(1,$id,PDO::PARAM_STR);
-        $statement->bindParam(2,$username,PDO::PARAM_STR);
-        $statement->bindParam(3,$password,PDO::PARAM_STR);
-        $statement->bindParam(4,$email,PDO::PARAM_STR);
-
-        if(!is_array($data)){
-            $data = [$data];
-        }
-        foreach($data as $row){
-            if(! $row instanceof $modelClass || $row->isValid()){
-                throw new InvalidArgumentException;
-            }
-            $id = $row->id;
-            $username= $row->username;
-            $password= $row->password;
-            $email= $row->email;
-            $statement->execute();
-
-            $row->entryId = $pdo->lastInsertId();
-        }
-        return $pdo->lastInsertId();
+        return $this->execute($statement);
     }
 
     function find($id){
-        $statement = $this->pdo->prepare('SELECT * FROM users WHERE id = ?');
-        $statement->bindParam(1,$id,PDO::PARAM_INT);
-        $statement->execute();
-        $this->_decorate($statement);
-        return $statement->fetch();
+        $statement = $this->prepare([
+                "sql"=>"SELECT * FROM users VALUES (:id);"
+                ,
+                "params"=>[
+                    ":id"=>$id
+                ]
+            ]
+        );
+        return $this->execute($statement);
     }
     function all(){
-        $statement = $this->pdo->query('SELECT * FROM users');
-        return $this->_decorate($statement);
+        $statement = $this->prepare([
+                "sql"=>"SELECT * FROM users;"
+            ]
+        );
+        return $this->execute($statement);
+
     }
 
-    public function getUsersByGender($gender){
+    public function getUserIdsScopedByGender($gender){
         if($this->db == null)return;
-        $template = 'SELECT %s FROM %s WHERE %s ORDER BY %s limit %s';
+        $statement = $this->prepare([
+                "sql"=> "SELECT id FROM users WHERE gender = 1 ORDER BY id ASC;"
+            ]
+        );
 
-        $column = 'name';
-        $table = 'users';
-        $condition = 'age > 12';
-        $order = 'asc';
-        $limit = '100';
-
-        $sql = sprintf($template,$column,$table,$condition,$order,$limit);
-
-        $response = $this->db->query($sql);
-        if(response!=null){
-            return $response;
-        }
-        return null;
+        return $this->execute($statement);
     }
 }
 
