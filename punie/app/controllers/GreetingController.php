@@ -12,7 +12,11 @@ class GreetingController{
          * $courses = CourseAndSubject.findByOwnerId('1');
          *
          */
-        $user = User.find(1);
+
+        //Data Mapper
+        $user = new User(["name"=>"bob","birthday"=>"1988/01/01"]);
+        // ideal call
+        $users = User::create(["name"=>"bob","birthday"=>"1988/01/01"]);
 
         include(ROOT_PATH.'/app/views/greeting.php');
     }

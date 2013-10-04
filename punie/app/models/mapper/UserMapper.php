@@ -8,29 +8,22 @@
 
 class UserMapper extends DataMapper
 {
-    protected $fields = [
-        'id' => ['type'=> 'int', 'primary' => true],
-        'username' => ['type'=> 'string', 'required' => true],
-        'password' => ['type'=> 'string', 'required' => true],
-        'email' => ['type'=> 'string', 'required' => true]
-        ];
-
     /**
      * @param Collection or Model Object $data
      * @return int InsertId
      * @throws InvalidArgumentException
      */
 
-    public function insert($model){
+    public function insert(User $model){
         $statement = $this->prepare([
-            "sql"=>"INSERT INTO users(name) VALUES (:name);"
-            ,
-            "params"=>[
-                ":name"=>$model->getName()
+            "sql"=>"INSERT INTO users(name) VALUES (:name);",
+                "params"=>[
+                    ":name"=>$model->getName(),
+                    ":birthday"=>$model->getBirthday(),
                 ]
             ]
         );
-        return $this->execute($statement);
+        $this->execute($statement);
     }
 
     function find($id){
@@ -44,15 +37,23 @@ class UserMapper extends DataMapper
         );
         return $this->execute($statement);
     }
-    function all(){
-        $statement = $this->prepare([
-                "sql"=>"SELECT * FROM users;"
-            ]
-        );
-        return $this->execute($statement);
 
+    /**
+     * @return array
+     */
+    function all(){
+        $statement = $this->pdo->query(
+               "SELECT * FROM users;"
+        );
+        // TODO FETCH_CLASSする場合、Modelの__construct()に引数を指定するとMissing argument 1 for User::__construct()となる。
+        $statement->setFetchMode(PDO::FETCH_CLASS,'User');
+        return $statement->fetchAll();
     }
 
+    /**
+     * @unused
+     */
+    /*
     public function getUserIdsScopedByGender($gender){
         if($this->db == null)return;
         $statement = $this->prepare([
@@ -62,6 +63,7 @@ class UserMapper extends DataMapper
 
         return $this->execute($statement);
     }
+    */
 }
 
 
